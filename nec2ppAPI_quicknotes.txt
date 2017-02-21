@@ -1,0 +1,197 @@
+http://tmolteno.github.io/necpp/libnecpp_8h.html
+
+******INITIALIZE AND CLEANUP******
+
+nec_create (void):
+Create an nec_context and initialize it.
+return a nec_context pointer
+
+nec_delete (nect_contect pointer):
+delete an nec_context object
+return 0 for success / 1 for error
+call nec_error_message() for detail
+
+******ANTENNA GEOMETRY******
+
+nec_wire (nec_context *in_context, int tag_id, int segment_count, double xw1, double yw1, double zw1, double xw2, double yw2, double zw2, double rad, double rdel, double rrad):
+create a straight wire
+in-context -- nec_context object
+tag_id -- tagID
+xw1,yw1,zw1 -- starting points
+xw2,yw2,zw2 -- ending points
+rad -- wire radius
+rdel -- for tapered wires. otherwise, 1.0
+rrad -- for tapered wires. otherwise, 1.0
+
+nec_sp_card (nec_context *in_context, int ns, double x1, double y1, double z1, double x2, double y2, double z2): 
+surface patch
+ns -- The Patch Type
+    0 (default) arbitrary patch shape
+    1 rectangular patch
+    2 triangular patch
+    3 quadrilateral patch	
+
+nec_sc_card (nec_context *in_context, int i2, double x3, double y3, double z3, double x4, double y4, double z4):
+Surface Patch Continuation
+
+nec_gm_card (nec_context *in_context, int itsi, int nrpt, double rox, double roy, double roz, double xs, double ys, double zs, int its)
+Coordinate Transformation
+itsi--Tag number increment.
+nprt--The number of new Structures to be generated
+ROX--Angle in degrees through which the structure is rotated about the X-axis. A positive angle causes a right-hand rotation.
+ROY--Angle of rotation about Y-axis.
+ROZ--Angle of rotation about
+XS--X, Y. Z components of vector by which
+YS--structure is translated with respect to
+ZS--the coordinate system.
+ITS--This number is input as a decimal number but is rounded to an integer before use. Tag numbers are searched sequentially until a segment having a tag of this segment through the end of the sequence of segments is moved by the card. If ITS is zero the entire structure is moved.
+
+nec_gx_card (nec_context *in_context, int i1, int i2):
+Reflection in Coordinate Planes.
+i1--Tag number increment.
+i2--This integer is divided into three independent digits, in columns 8, 9, and 10 of the card, which control reflection in the three orthogonal coordinate planes. A one in column 8 causes reflection along the X-axis (reflection in Y, Z plane); a one in column 9 causes reflection along the Y-axis; and a one in column 10 causes reflection along the Z axis. A zero or blank in any of these columns causes the corres- ponding reflection to be skipped.
+
+nec_geometry_complete (nec_context *in_context, int gpflag)
+Indicate that the geometry is complete (GE card) 
+gpflag--Geometry ground plain flag.
+	    0 - no ground plane is present.
+	    1 - Indicates a ground plane is present. Structure symmetry is modified as required, and the current expansion is modified so that the currents on segments touching the ground (x, Y plane) are interpolated to their images below the ground (charge at base is zero)
+	    -1 - indicates a ground is present. Structure symmetry is modified as required. Current expansion, however, is not modified, Thus, currents on segments touching the ground will go to zero at the ground.
+
+******ERROR HANDLING******
+
+nec_benchmark (void):
+Benchmark the libnecpp engine. A score of 1 is roughly an Athlon XP 1800.
+
+nec_error_message(void):
+Get the last error message All functions return a long. If this is != 0. Then an error has occurred. The error message can be retrieved with this function. 
+
+******ANTENNA ENVIRONMENT******
+
+nec_medium_parameters (nec_context *in_context, double permittivity, double permeability):
+Set the prameters of the medium (permittivity and permeability) 
+permittivity--The electric permittivity of the medium (in farads per meter)
+permeability--The magnetic permeability of the medium (in henries per meter)
+
+nec_gn_card (nec_context *in_context, int iperf, int nradl, double epse, double sig, double tmp3, double tmp4, double tmp5, double tmp6):
+Ground Card Examples:
+		1) Infinite ground plane nec_gn_card(nec, 1, 0, 0, 0, 0, 0, 0, 0);
+		2) Radial Wire Ground Plane (4 wires, 2 meters long, 5mm in radius) nec_gn_card(nec, 4, 0, 0.0, 0.0, 2.0, 0.005, 0.0, 0.0)
+iperf--Ground-type flag
+
+		-1 Nullifies ground parameters previously used and sets free-space condition. The remainder of the parameters are ignored in this case.
+		0 Finite ground, reflection coefficient approximation
+		1 Perfectly conducting ground.
+		2 Finite ground, Sommerfeld/Norton method.
+
+nradl--Number of radial wires in the ground screen approximation, O implies no ground screen.
+epse--Relative dielectric constant for ground in the vicinity of the antenna. Zero in the case of perfect ground.
+sig--Conductivity in mhos/meter of the ground in the vicinity of the antenna. Use zero in the case of a perfect ground. If SIG is input as a negative number, the complex dielectric constant Ec = Er -j sigma/omaga epslon is set to EPSR - |SIG|.
+
+nec_fr_card (nec_context *in_context, int in_ifrq, int in_nfrq, double in_freq_mhz, double in_del_freq):
+FR card
+in_ifrq--0 is a linear range of frequencies, 1 is a log range.
+in_nfrq--The number of frequencies
+in_freq_mhz--The starting frequency in MHz.
+in_del_freq--The frequency step (in MHz for ifrq = 0)
+
+nec_ek_card (nec_context *in_context, int itmp1):
+To control use of the extended thin-wire kernel approximation.
+itmp1:
+    -1 Return to normal kernel
+    0 Use Extended thin wire kernel
+
+nec_ld_card (nec_context *in_context, int ldtyp, int ldtag, int ldtagf, int ldtagt, double tmp1, double tmp2, double tmp3):
+LD card (Loading)
+ldtyp--Type of loading (5 = segment conductivity)
+ldtag--Tag (zero for absolute segment numbers, or in conjunction with 0 for next parameter, for all segments)
+ldtagf	Equal to m specifies the mth segment of the set of segments whose tag numbers equal the tag number specified in the previous parameter. If the previous parameter (LDTAG) is zero, LDTAGF then specifies an absolute segment number. If both LDTAG and LDTAGF are zero, all segments will be loaded.
+ldtagt--Equal to n specifies the nth segment of the set of segments whose tag numbers equal the tag number specified in the parameter LDTAG. This parameter must be greater than or equal to the previous parameter. The loading specified is applied to each of the mth through nth segments of the set of segments having tags equal to LDTAG. Again if LDTAG is zero, these parameters refer to absolute segment numbers. If LDTAGT is left blank, it is set equal to the previous parameter (LDTAGF).
+
+nec_ex_card (nec_context *in_context, int extype, int i2, int i3, int i4, double tmp1, double tmp2, double tmp3, double tmp4, double tmp5, double tmp6):
+EX card (Excitation) 
+extype--Type of excitation
+
+    O - voltage source (applied-E-field source).
+    1 - incident plane wave, linear polarization.
+    2 - incident plane wave, right-hand (thumb along the incident k vector) elliptic polarization.
+    3 - incident plane wave, left-hand elliptic polarization.
+    4 - elementary current source.
+    5 - voltage source (current-slope-discontinuity).
+
+i2--Tag number the source segment. This tag number along with the number to be given in (i3), which identifies the position of the segment in a set of equal tag numbers, uniquely definer the source segment.
+
+    O - Blank or zero in field (i2) implies that the Source segment will be identified by using the absolute segment number in the next field (i3).
+
+i3--Equal to m, specifies the mth segment of the set of segments whose tag numbers are equal to the number set by the previous parameter. If the previous parameter is zero, the number in (i3) must be the absolute segment number of the source.
+i4--Meaning Depends on the extype parameter. 
+
+nec_excitation_voltage (nec_context *in_context, int tag, int segment, double v_real, double v_imag):
+Voltage Source Excitation. 
+tag--Tag number of the source segment. This tag number along with the number to be given in (segment), which identifies the position of the segment in a set of equal tag numbers, uniquely definer the source segment.
+
+    O - Blank or zero in field (tag) implies that the Source segment will be identified by using the absolute segment number in the next field (segment).
+
+segment--Equal to m, specifies the mth segment of the set of segments whose tag numbers are equal to the number set by the previous parameter. If the previous parameter is zero, the number in (segment) must be the absolute segment number of the source.
+v_real--real part of the voltage excitation (Volts)
+v_imag--imaginary part of the voltage excitation (Volts)
+
+nec_excitation_current (nec_context *in_context, double x, double y, double z, double a, double beta, double moment):
+Current Source Excitation.
+    x-- X position in meters.
+    y-- Y position in meters.
+    z-- Z position in meters.
+    a-- a in degrees. a is the angle the current source makes with the XY plane as illustrated on figure 15.
+    beta-- beta in degrees. beta is the angle the projection of the current source on the XY plane makes with the X axis.
+    moment-- "Current moment" of the source. This parameter is equal to the product Il in amp meters.
+
+nec_excitation_planewave (nec_context *in_context, int n_theta, int n_phi, double theta, double phi, double eta, double dtheta, double dphi, double pol_ratio):
+Planewave Excitation (Linear Polarization)
+n_theta-- Number of theta angles desired for the incident plane wave .
+n_phi-- Number of phi angles desired for the incident plane wave.
+theta-- Theta in degrees. Theta 19 defined in standard spherical coordinates as illustrated
+phi-- Phi in degrees. Phi is the standard spherical angle defined lned in the XY plane.
+eta-- Eta in degrees. Eta is the polarization angle defined as the angle between the theta unit vector and the direction of the electric field for linear polarization or the major ellipse axis for elliptical polarization.
+dtheta-- Theta angle stepping increment in degrees.
+dphi-- Phi angle stepping increment in degrees.
+pol_ratio-- Ratio of minor axis to major axis for elliptic polarization (major axis field strength - 1 V/m).
+
+******SIMULATION OUTPUTS******
+
+nec_xq_card (nec_context *in_context, int itmp1):
+XQ Card (Execute) 
+itmp1--Options controlled by (I1) are: 0 - no patterns requested (normal case). 1 - generates a pattern cut in the XZ plane, i.e., phi = 0 degrees and theta varies from 0 degrees to 90 degrees in 1 degree steps. 2 - generates a pattern cut in the YZ plane, i.e., phi = 90 degrees theta varies from 0 degrees to 90 degrees in 1 degree steps. 3 - generates both of the cuts described for the values 1 and 2.
+
+nec_rp_card (nec_context *in_context, int calc_mode, int n_theta, int n_phi, int output_format, int normalization, int D, int A, double theta0, double phi0, double delta_theta, double delta_phi, double radial_distance, double gain_norm):
+Standard radiation pattern parameters.
+
+nec_pt_card (nec_context *in_context, int itmp1, int itmp2, int itmp3, int itmp4):
+Print Flag (Printing of Currents. 
+
+******ANALYSIS OF OUTPUTS******
+
+nec_gain (nec_context *in_context, int freq_index, int theta_index, int phi_index)
+Get the gain from a radiation pattern. 
+in dB
+freq_index--The rp_card frequency index. If this parameter is 0, then the first simulation results are used. Subsequent simulations will store their results at higher indices.
+theta_index--The theta index (starting at zero) of the radiation pattern
+phi_index--The phi index (starting at zero) of the radiation pattern 
+
+nec_gain_max (nec_context *in_context, int freq_index):
+Get the maximum gain from a radiation pattern.
+
+nec_gain_min (nec_context *in_context, int freq_index):
+Get the minimum gain from a radiation pattern.
+
+nec_gain_mean (nec_context *in_context, int freq_index):
+Get the mean gain from a radiation pattern. 
+
+nec_gain_sd (nec_context *in_context, int freq_index):
+Get the standard deviation of the gain from a radiation pattern.
+
+nec_impedance_real (nec_context *in_context, int freq_index)
+Impedance: Real Part.
+ 
+nec_impedance_imag (nec_context *in_context, int freq_index)
+Impedance: Imaginary Part. 
+freq_index--The rp_card frequency index. If this parameter is 0, then the first simulation results are used. Subsequent simulations will store their results at higher indices. 
