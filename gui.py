@@ -36,7 +36,7 @@ class FF (FigureCanvas):
         radii=np.linspace(self.r0, self.r1, self.nr)
         L, R = np.meshgrid(lengths, radii)
         reflections=np.zeros((self.nr,self.nl))
-        reflections=plot.compute(self.nl,self.nr,lengths,radii,self.z0)
+        reflections=np.round(plot.compute(self.nl,self.nr,lengths,radii,self.z0),3)
         self.ax1.cla()    # clear plots and axis
         self.ax2.cla()
         #c=self.ax1.contourf(L, R, reflections, cmap=cm.plasma)    # replot the figures
@@ -47,9 +47,11 @@ class FF (FigureCanvas):
         self.ax2.set_xlabel("Antenna length (m)")
         self.ax2.set_ylabel("Radius (m)")
         self.ax2.set_zlabel("Reflection Coefficient")
-        # update colorbars, just simply replot colorbar
-        self.cb1=plt.colorbar(c, cax=self.axcb1)
-        self.cb2=plt.colorbar(s, cax=self.axcb2)
+        # update colorbars
+        self.cb1.on_mappable_changed(c)  # update cmap
+        self.cb2.on_mappable_changed(s)
+        self.cb1.set_ticklabels(np.linspace(np.amin(reflections),np.amax(reflections),10), update_ticks=True)  # update ticks immediately
+        self.cb2.set_ticklabels(np.linspace(np.amin(reflections),np.amax(reflections),10), update_ticks=True)
         self.draw()
         
 

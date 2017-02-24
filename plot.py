@@ -40,7 +40,7 @@ def plot(lengths, radii, reflections):
 	# shift position of 2nd colobar
 	box2=ax2.get_position()
 	axcb2=plt.axes([box2.x0*1.05 + box2.width * 1.05, box2.y0, 0.01, box2.height])
-	cb2=plt.colorbar(s2, cax=axcb2)
+	cb2=plt.colorbar(c1, cax=axcb2)
 	ax2.set_xlabel("Antenna length (m)")
 	ax2.set_ylabel("Radius (m)")
 	ax2.set_zlabel("Reflection Coefficient")
