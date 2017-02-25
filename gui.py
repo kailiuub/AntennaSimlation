@@ -1,4 +1,4 @@
-import sys
+import sys, time
 import csv
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -11,6 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import math
+from random import randint
 
 import plot
 
@@ -169,7 +170,6 @@ class App(QMainWindow):
         # set up progress bar     
         self.progress=QProgressBar()
         self.tab5_layout.addWidget(self.progress,9,4,1,2)
-        
         # add tab5_layout to tab5
         self.tab5.setLayout(self.tab5_layout)
         # add tabs to layout1 and add layout1 to mainW1
@@ -180,16 +180,20 @@ class App(QMainWindow):
         self.mainW1.resize(1100,560)
         self.mainW1.move(10,30)
 
+    def updatebar(self):
+        self.progress.setValue(plot.prog)
+        self.but1.setText('Click to Refresh Plot')
+        
     @pyqtSlot()
     def aboutact(self):
         resp=QMessageBox.question(self,'About','This GUI is designed to demonstrate Navier-Stokes-based Channel Flow Analysis',QMessageBox.Ok)
-     
+ 
     @pyqtSlot()
     def plotting(self):
-        self.complete=0
-        while self.complete<100:
-           self.complete+=0.0001
-           self.progress.setValue(self.complete)
+        #reset progressbar
+        self.but1.setText('Updating ...')
+        self.progress.setValue(0)
+        
         #collect values from textinputs adn assign to navierstokes.vars
         self.fig.nl=int(self.textin2.text())
         self.fig.l0=float(self.textin3.text())
@@ -198,8 +202,22 @@ class App(QMainWindow):
         self.fig.r0=float(self.textin6.text())
         self.fig.r1=float(self.textin7.text())
         self.fig.z0=float(self.textin8.text())
-        #recompute and redraw the plot       
-        self.fig.updatefig()   # update plots
+        #place recomputation function to a THREAD object       
+        self.threadobj1=ThreadClass1()
+        self.threadobj1.val.connect(self.updatebar)   # update plots (!only write func name in ())
+        self.threadobj1.finished.connect(self.threadobj1.deleteLater)  # delete thread objects (not self.) after executing
+        self.threadobj1.start()
+        self.fig.updatefig()   # progressBar will update after the main thread finished
+
+# ****** Thread Class for Loop Execution******
+
+class ThreadClass1(QThread):
+    val=pyqtSignal()    
+    def __init__(self, parent=None):
+      super(ThreadClass1, self).__init__(parent)
+    def run(self):
+        self.val.emit()
+
                                 
 if __name__=="__main__":
 	qApp = QApplication(sys.argv)

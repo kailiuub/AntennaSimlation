@@ -11,10 +11,16 @@ import impedance
 
 def compute(nl,nr,lengths,radii,z0):
 	reflections=np.zeros((nr,nl))
+	global prog  # show the computation progress
+	prog=0 
+	sig=0
 	for i in range(nr):   # row for y axis
 	  for j in range(nl):  # column for x axis
 	    z = impedance.impedance(freq=134.5, base=0.5, length=lengths[j], radius=radii[i])
 	    reflections[i,j]=impedance.gamma(z,z0)
+	    sig+=1
+	    prog=100*sig/(nl*nr)
+	    print(prog)
 	return reflections
 
 def plot(lengths, radii, reflections):
