@@ -59,7 +59,7 @@ class FF (FigureCanvas):
 class App(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
-        self.setWindowTitle('Channel Flow - Navier-Stokes')
+        self.setWindowTitle('Antenna EM Simulation GUI')
         self.setGeometry(50,50,1150,600)
 
         # **** Create Menu ****
